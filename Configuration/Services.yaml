@@ -4,8 +4,8 @@ services:
     autoconfigure: true
     public: false
 
-  Brightside\Embedassets\Xclass\CssViewHelper:
+  Brightside\Embedassets\ViewHelpers\Asset\CssViewHelper:
     public: true
 
-  Brightside\Embedassets\Xclass\ScriptViewHelper:
+  Brightside\Embedassets\ViewHelpers\Asset\ScriptViewHelper:
     public: true

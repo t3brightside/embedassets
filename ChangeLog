@@ -1,2 +1,4 @@
 1.0.1
-    - [BUGFIX] remove replace from composer file
+    - [BUGFIX] Remove replace from composer file
+1.1.0
+    - [TASK] Create custom viewhelpers and remove xclass

@@ -16,10 +16,11 @@
 
 ## Use
 
-Add `embed="1"` as in given examples
+Add namespace and `embed="1"` as in given examples
 ```xml
-<f:asset.css embed="1" identifier="myindentifier" href="EXT:myextension/Resources/Public/Css/myfile.css" />
-<f:asset.script embed="1" identifier="myindentifier" src="EXT:myextension/Resources/Public/JavaScript/myfile.js" />
+{namespace ea=Brightside\Embedassets\ViewHelpers}
+<ea:asset.css embed="1" identifier="myindentifier" href="EXT:myextension/Resources/Public/Css/myfile.css" />
+<ea:asset.script embed="1" identifier="myindentifier" src="EXT:myextension/Resources/Public/JavaScript/myfile.js" />
 ```
 
 ## Sources

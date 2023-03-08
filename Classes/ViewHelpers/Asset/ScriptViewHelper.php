@@ -15,7 +15,7 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace Brightside\Embedassets\Xclass;
+namespace Brightside\Embedassets\ViewHelpers\Asset;
 
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -23,21 +23,19 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * CssViewHelper
+ * ScriptViewHelper
  *
  * Examples
  * ========
  *
  * ::
  *
- *    <f:asset.css identifier="identifier123" href="EXT:my_ext/Resources/Public/Css/foo.css" />
- *    <f:asset.css identifier="identifier123">
- *       .foo { color: black; }
- *    </f:asset.css>
- *
- * See also :ref:`changelog-Feature-90522-IntroduceAssetCollector`
+ *    <f:asset.script identifier="identifier123" src="EXT:my_ext/Resources/Public/JavaScript/foo.js" />
+ *    <f:asset.script identifier="identifier123">
+ *       alert('hello world');
+ *    </f:asset.script>
  */
-final class CssViewHelper extends AbstractTagBasedViewHelper
+final class ScriptViewHelper extends AbstractTagBasedViewHelper
 {
     /**
      * This VH does not produce direct output, thus does not need to be wrapped in an escaping node
@@ -47,12 +45,12 @@ final class CssViewHelper extends AbstractTagBasedViewHelper
     protected $escapeOutput = false;
 
     /**
-     * Rendered children string is passed as CSS code,
+     * Rendered children string is passed as JavaScript code,
      * there is no point in HTML encoding anything from that.
      *
      * @var bool
      */
-    protected $escapeChildren = true;
+    protected $escapeChildren = false;
 
     protected AssetCollector $assetCollector;
 
@@ -79,29 +77,25 @@ final class CssViewHelper extends AbstractTagBasedViewHelper
     {
         parent::initializeArguments();
         $this->registerUniversalTagAttributes();
-        $this->registerTagAttribute('as', 'string', 'Define the type of content being loaded (For rel="preload" or rel="prefetch" only).', false);
+        $this->registerTagAttribute('async', 'bool', 'Define that the script will be fetched in parallel to parsing and evaluation.', false);
         $this->registerTagAttribute('crossorigin', 'string', 'Define how to handle crossorigin requests.', false);
-        $this->registerTagAttribute('disabled', 'bool', 'Define whether or not the described stylesheet should be loaded and applied to the document.', false);
-        $this->registerTagAttribute('href', 'string', 'Define the URL of the resource (absolute or relative).', false);
-        $this->registerTagAttribute('hreflang', 'string', 'Define the language of the resource (Only to be used if \'href\' is set).', false);
-        $this->registerTagAttribute('importance', 'string', 'Define the relative fetch priority of the resource.', false);
+        $this->registerTagAttribute('defer', 'bool', 'Define that the script is meant to be executed after the document has been parsed.', false);
         $this->registerTagAttribute('integrity', 'string', 'Define base64-encoded cryptographic hash of the resource that allows browsers to verify what they fetch.', false);
-        $this->registerTagAttribute('media', 'string', 'Define which media type the resources applies to.', false);
-        $this->registerTagAttribute('referrerpolicy', 'string', 'Define which referrer is sent when fetching the resource.', false);
-        $this->registerTagAttribute('rel', 'string', 'Define the relationship of the target object to the link object.', false);
-        $this->registerTagAttribute('sizes', 'string', 'Define the icon size of the resource.', false);
-        $this->registerTagAttribute('type', 'string', 'Define the MIME type (usually \'text/css\').', false);
+        $this->registerTagAttribute('nomodule', 'bool', 'Define that the script should not be executed in browsers that support ES2015 modules.', false);
         $this->registerTagAttribute('nonce', 'string', 'Define a cryptographic nonce (number used once) used to whitelist inline styles in a style-src Content-Security-Policy.', false);
+        $this->registerTagAttribute('referrerpolicy', 'string', 'Define which referrer is sent when fetching the resource.', false);
+        $this->registerTagAttribute('src', 'string', 'Define the URI of the external resource.', false);
+        $this->registerTagAttribute('type', 'string', 'Define the MIME type (usually \'text/javascript\').', false);
         $this->registerArgument(
             'identifier',
             'string',
-            'Use this identifier within templates to only inject your CSS once, even though it is added multiple times.',
+            'Use this identifier within templates to only inject your JS once, even though it is added multiple times.',
             true
         );
         $this->registerArgument(
             'priority',
             'boolean',
-            'Define whether the CSS should be included before other CSS. CSS will always be output in the <head> tag.',
+            'Define whether the JavaScript should be put in the <head> tag above-the-fold or somewhere in the body part.',
             false,
             false
         );
@@ -114,40 +108,34 @@ final class CssViewHelper extends AbstractTagBasedViewHelper
         );
     }
 
-
-    protected function getPageRenderer(): PageRenderer
-    {
-        return GeneralUtility::makeInstance(PageRenderer::class);
-    }
-
-
     public function render(): string
     {
         $identifier = (string)$this->arguments['identifier'];
         $attributes = $this->tag->getAttributes();
 
         // boolean attributes shall output attr="attr" if set
-        if ($attributes['disabled'] ?? false) {
-            $attributes['disabled'] = 'disabled';
+        foreach (['async', 'defer', 'nomodule'] as $_attr) {
+            if ($attributes[$_attr] ?? false) {
+                $attributes[$_attr] = $_attr;
+            }
         }
 
-        $file = $attributes['href'] ?? null;
-        unset($attributes['href']);
+        $src = $attributes['src'] ?? null;
+        unset($attributes['src']);
         $options = [
             'priority' => $this->arguments['priority'],
         ];
-
-        if ($file !== null) {
+        if ($src !== null) {
             if ($this->arguments['embed']) {
-                $content = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($file)));
-                $this->assetCollector->addInlineStyleSheet($identifier, $content, $attributes, $options);
+                $content = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($src)));
+                $this->assetCollector->addInlineJavaScript($identifier, $content, $attributes, $options);
             } else {
-                $this->assetCollector->addStyleSheet($identifier, $file, $attributes, $options);
+                $this->assetCollector->addJavaScript($identifier, $src, $attributes, $options);
             }
         } else {
             $content = (string)$this->renderChildren();
             if ($content !== '') {
-                $this->assetCollector->addInlineStyleSheet($identifier, $content, $attributes, $options);
+                $this->assetCollector->addInlineJavaScript($identifier, $content, $attributes, $options);
             }
         }
         return '';
