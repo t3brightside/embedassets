@@ -13,9 +13,6 @@
 	"require": {
 		"typo3/cms-fluid": "^11.5 || ^12.1"
 	},
-	"replace": {
-        "t3brightside/embedassets": "self.version"
-    },
 	"autoload": {
 		"psr-4": {
 		  "Brightside\\Embedassets\\": "Classes"

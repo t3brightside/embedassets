@@ -3,7 +3,7 @@
     'title' => 'Embed Assets',
     'description' => 'Embed CSS and JS files for Fluid f:asset',
     'category' => 'fe',
-    'version' => '1.0.0',
+    'version' => '1.0.1',
     'state' => 'stable',
     'clearCacheOnLoad' => 1,
     'author' => 'Tanel Põld',
