@@ -1,0 +1,29 @@
+{
+	"name": "t3brightside/embedassets",
+	"description": "Embed CSS and JS files for Fluid f:asset",
+	"type": "typo3-cms-extension",
+	"keywords": ["TYPO3", "optimize"],
+	"homepage": "https://t3brightside.com/",
+	"license": "GPL-2.0-or-later",
+	"authors": [{
+		"name": "Tanel Põld",
+		"role": "Developer",
+		"homepage": "https://t3brightside.com"
+	}],
+	"require": {
+		"typo3/cms-fluid": "^11.5 || ^12.1"
+	},
+	"replace": {
+        "t3brightside/embedassets": "self.version"
+    },
+	"autoload": {
+		"psr-4": {
+		  "Brightside\\Embedassets\\": "Classes"
+		}
+	  },
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "embedassets"
+		}
+	}
+}
