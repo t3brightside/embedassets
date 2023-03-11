@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use MatthiasMullie\Minify;
 
 /**
  * ScriptViewHelper
@@ -125,9 +126,14 @@ final class ScriptViewHelper extends AbstractTagBasedViewHelper
         $options = [
             'priority' => $this->arguments['priority'],
         ];
+
+        $minifier = new Minify\JS();
+
         if ($src !== null) {
             if ($this->arguments['embed']) {
                 $content = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($src)));
+                $minifier->add($content);
+                $content = $minifier->minify();
                 $this->assetCollector->addInlineJavaScript($identifier, $content, $attributes, $options);
             } else {
                 $this->assetCollector->addJavaScript($identifier, $src, $attributes, $options);
@@ -135,6 +141,8 @@ final class ScriptViewHelper extends AbstractTagBasedViewHelper
         } else {
             $content = (string)$this->renderChildren();
             if ($content !== '') {
+                $minifier->add($content);
+                $content = $minifier->minify();
                 $this->assetCollector->addInlineJavaScript($identifier, $content, $attributes, $options);
             }
         }

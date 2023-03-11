@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use MatthiasMullie\Minify;
 
 /**
  * CssViewHelper
@@ -137,16 +138,22 @@ final class CssViewHelper extends AbstractTagBasedViewHelper
             'priority' => $this->arguments['priority'],
         ];
 
+        $minifier = new Minify\CSS();
+
         if ($file !== null) {
             if ($this->arguments['embed']) {
-                $content = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($file)));
-                $this->assetCollector->addInlineStyleSheet($identifier, $content, $attributes, $options);
+                $filecontent = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($file)));
+                $minifier->add($filecontent);
+                $filecontent = $minifier->minify();
+                $this->assetCollector->addInlineStyleSheet($identifier, $filecontent, $attributes, $options);
             } else {
                 $this->assetCollector->addStyleSheet($identifier, $file, $attributes, $options);
             }
         } else {
             $content = (string)$this->renderChildren();
             if ($content !== '') {
+                $minifier->add($content);
+                $content = $minifier->minify();
                 $this->assetCollector->addInlineStyleSheet($identifier, $content, $attributes, $options);
             }
         }
