@@ -4,8 +4,7 @@
 [![Downloads](https://poser.pugx.org/t3brightside/embedassets/downloads)](https://packagist.org/packages/t3brightside/embedassets)
 [![Brightside](https://img.shields.io/badge/by-t3brightside.com-orange.svg?style=flat)](https://t3brightside.com)
 
-**TYPO3 CMS extension for embed CSS and JS files in Fluid.**
-Embeds CSS and JS into Fluid HTML output. Embed assets are minifed.
+**Fluid viewhelpers for embed and minified CSS/JS**
 
 ## System requirements
 
@@ -20,7 +19,7 @@ Embeds CSS and JS into Fluid HTML output. Embed assets are minifed.
 Add namespace and `embed="1"` as in given examples
 ```xml
 {namespace ea=Brightside\Embedassets\ViewHelpers}
-<ea:asset.css embed="1" identifier="myindentifier" href="EXT:myextension/Resources/Public/Css/myfile.css" />
+<ea:asset.css embed="1" priority="1" identifier="myindentifier" href="EXT:myextension/Resources/Public/Css/myfile.css" />
 <ea:asset.script embed="1" identifier="myindentifier" src="EXT:myextension/Resources/Public/JavaScript/myfile.js" />
 ```
 

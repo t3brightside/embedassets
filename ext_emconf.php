@@ -1,7 +1,7 @@
 <?php
   $EM_CONF[$_EXTKEY] = [
     'title' => 'Embed Assets',
-    'description' => 'Embed CSS and JS files for Fluid f:asset',
+    'description' => 'Fluid viewhelpers for embed and minified CSS/JS',
     'category' => 'fe',
     'version' => '1.2.0',
     'state' => 'stable',

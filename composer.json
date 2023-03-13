@@ -1,6 +1,6 @@
 {
 	"name": "t3brightside/embedassets",
-	"description": "Viewhelpers for embed CSS and JS files in Fluid",
+	"description": "Fluid viewhelpers for embed and minified CSS/JS",
 	"type": "typo3-cms-extension",
 	"keywords": ["TYPO3", "optimize"],
 	"homepage": "https://t3brightside.com/",
