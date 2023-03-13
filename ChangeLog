@@ -2,3 +2,5 @@
     - [BUGFIX] Remove replace from composer file
 1.1.0
     - [TASK] Create custom viewhelpers and remove xclass
+1.2.0
+    - [FEATURE] Add CSS and JS minifiaction using matthiasmullie/minify

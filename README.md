@@ -5,6 +5,7 @@
 [![Brightside](https://img.shields.io/badge/by-t3brightside.com-orange.svg?style=flat)](https://t3brightside.com)
 
 **TYPO3 CMS extension for embed CSS and JS files in Fluid.**
+Embeds CSS and JS into Fluid HTML output. Embed assets are minifed.
 
 ## System requirements
 
