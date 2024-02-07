@@ -4,3 +4,5 @@
     - [TASK] Create custom viewhelpers and remove xclass
 1.2.0
     - [FEATURE] Add CSS and JS minifiaction using matthiasmullie/minify
+1.3.0
+    - [TASK] Add TYPO3 13 compatibility
