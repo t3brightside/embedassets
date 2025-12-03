@@ -2,19 +2,6 @@
 
 declare(strict_types=1);
 
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
 namespace Brightside\Embedassets\ViewHelpers\Asset;
 
 use TYPO3\CMS\Core\Page\AssetCollector;
@@ -23,19 +10,6 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use MatthiasMullie\Minify;
 
-/**
- * ScriptViewHelper
- *
- * Examples
- * ========
- *
- * ::
- *
- *    <f:asset.script identifier="identifier123" src="EXT:my_ext/Resources/Public/JavaScript/foo.js" />
- *    <f:asset.script identifier="identifier123">
- *       alert('hello world');
- *    </f:asset.script>
- */
 final class ScriptViewHelper extends AbstractTagBasedViewHelper
 {
     /**
@@ -62,7 +36,6 @@ final class ScriptViewHelper extends AbstractTagBasedViewHelper
 
     public function initialize(): void
     {
-        // Add a tag builder, that does not html encode values, because rendering with encoding happens in AssetRenderer
         $this->setTagBuilder(
             new class () extends TagBuilder {
                 public function addAttribute($attributeName, $attributeValue, $escapeSpecialCharacters = false): void
@@ -77,16 +50,16 @@ final class ScriptViewHelper extends AbstractTagBasedViewHelper
     public function initializeArguments(): void
     {
         parent::initializeArguments();
-        $this->registerUniversalTagAttributes();
-        $this->registerTagAttribute('async', 'bool', 'Define that the script will be fetched in parallel to parsing and evaluation.', false);
-        $this->registerTagAttribute('crossorigin', 'string', 'Define how to handle crossorigin requests.', false);
-        $this->registerTagAttribute('defer', 'bool', 'Define that the script is meant to be executed after the document has been parsed.', false);
-        $this->registerTagAttribute('integrity', 'string', 'Define base64-encoded cryptographic hash of the resource that allows browsers to verify what they fetch.', false);
-        $this->registerTagAttribute('nomodule', 'bool', 'Define that the script should not be executed in browsers that support ES2015 modules.', false);
-        $this->registerTagAttribute('nonce', 'string', 'Define a cryptographic nonce (number used once) used to whitelist inline styles in a style-src Content-Security-Policy.', false);
-        $this->registerTagAttribute('referrerpolicy', 'string', 'Define which referrer is sent when fetching the resource.', false);
-        $this->registerTagAttribute('src', 'string', 'Define the URI of the external resource.', false);
-        $this->registerTagAttribute('type', 'string', 'Define the MIME type (usually \'text/javascript\').', false);
+        $this->registerArgument('async', 'bool', 'Define that the script will be fetched in parallel to parsing and evaluation.', false, false);
+        $this->registerArgument('defer', 'bool', 'Define that the script is meant to be executed after the document has been parsed.', false, false);
+        $this->registerArgument('nomodule', 'bool', 'Define that the script should not be executed in browsers that support ES2015 modules.', false, false);
+        $this->registerArgument('src', 'string', 'Define the URI of the external resource.', false);
+        $this->registerArgument('crossorigin', 'string', 'Define how to handle crossorigin requests.', false);
+        $this->registerArgument('integrity', 'string', 'Define base64-encoded cryptographic hash of the resource that allows browsers to verify what they fetch.', false);
+        $this->registerArgument('nonce', 'string', 'Define a cryptographic nonce (number used once) used to whitelist inline styles in a style-src Content-Security-Policy.', false);
+        $this->registerArgument('referrerpolicy', 'string', 'Define which referrer is sent when fetching the resource.', false);
+        $this->registerArgument('type', 'string', 'Define the MIME type (usually \'text/javascript\').', false);
+        
         $this->registerArgument(
             'identifier',
             'string',
@@ -112,26 +85,49 @@ final class ScriptViewHelper extends AbstractTagBasedViewHelper
     public function render(): string
     {
         $identifier = (string)$this->arguments['identifier'];
-        $attributes = $this->tag->getAttributes();
+        
+        // Collect all registered arguments and additional attributes
+        $attributes = array_merge(
+            $this->arguments,
+            $this->additionalArguments
+        );
 
-        // boolean attributes shall output attr="attr" if set
-        foreach (['async', 'defer', 'nomodule'] as $_attr) {
-            if ($attributes[$_attr] ?? false) {
-                $attributes[$_attr] = $_attr;
+        // The 'src' attribute is now accessed from the arguments
+        $src = $attributes['src'] ?? null;
+        
+        // Unset arguments that are specific to the ViewHelper logic, not the HTML tag
+        unset(
+            $attributes['identifier'],
+            $attributes['priority'],
+            $attributes['embed'],
+            // Unset 'src' so it's not double-processed later if registered as an argument
+            $attributes['src']
+        );
+
+        // boolean attributes shall output attr="attr" if set.
+        // We must check the boolean value from $this->arguments
+        foreach (['async', 'defer', 'nomodule'] as $attrName) {
+            $attrValue = $this->arguments[$attrName] ?? false;
+            if ((bool)$attrValue) {
+                $attributes[$attrName] = $attrName;
+            } else {
+                // Ensure it is removed if it was present in additionalArguments but explicitly false
+                unset($attributes[$attrName]);
             }
         }
 
-        $src = $attributes['src'] ?? null;
-        unset($attributes['src']);
         $options = [
-            'priority' => $this->arguments['priority'],
+            'priority' => (bool)($this->arguments['priority'] ?? false),
         ];
 
-        $minifier = new Minify\JS();
+        $embed = (bool)($this->arguments['embed'] ?? false);
+
+        $minifier = GeneralUtility::makeInstance(Minify\JS::class);
 
         if ($src !== null) {
-            if ($this->arguments['embed']) {
-                $content = (string)file_get_contents(GeneralUtility::getFileAbsFileName(trim($src)));
+            if ($embed) {
+                $absoluteFile = GeneralUtility::getFileAbsFileName(trim($src));
+                $content = (string)file_get_contents($absoluteFile);
                 $minifier->add($content);
                 $content = $minifier->minify();
                 $this->assetCollector->addInlineJavaScript($identifier, $content, $attributes, $options);
